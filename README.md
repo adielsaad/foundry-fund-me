@@ -7,7 +7,8 @@ A decentralized crowdfunding platform built with Solidity and Foundry. This proj
 - Accept ETH donations with a minimum USD value requirement
 - Real-time ETH/USD price conversion using Chainlink Price Feeds
 - Secure withdrawal mechanism (owner-only)
-- Automated testing suite
+- Gas-optimized withdrawal function
+- Automated testing suite with comprehensive test coverage
 - Multi-network deployment support
 
 ## Prerequisites
@@ -40,6 +41,13 @@ For verbose output:
 forge test -vv
 ```
 
+The test suite includes:
+- Basic functionality tests
+- Gas optimization tests
+- Multiple funder scenarios
+- Owner-only access tests
+- Price feed integration tests
+
 ## Deployment
 
 The project supports deployment to multiple networks through the `HelperConfig` contract. To deploy:
@@ -67,6 +75,11 @@ forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url <your_rpc_url> --b
 - Resets the funders array and contribution amounts
 - Transfers all ETH to the owner
 
+### `cheaperWithdraw()`
+- Gas-optimized version of the withdraw function
+- More efficient for handling multiple funders
+- Same functionality as `withdraw()` but with lower gas costs
+
 ### `getVersion()`
 - Returns the version of the Chainlink Price Feed being used
 
@@ -76,6 +89,14 @@ forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url <your_rpc_url> --b
 - Minimum USD value requirement for funding
 - Immutable owner address
 - Chainlink Price Feed integration for accurate ETH/USD conversion
+- Gas optimization for better scalability
+
+## Gas Optimization
+
+The contract includes gas optimization features:
+- Efficient withdrawal mechanism for multiple funders
+- Optimized storage access patterns
+- Reduced gas costs for bulk operations
 
 ## License
 
