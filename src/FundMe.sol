@@ -10,6 +10,9 @@ error FundMe__NotOwner();
 contract FundMe {
     using PriceConverter for uint256;
 
+    // State variables
+    // 1. State variables are stored on the contract storage
+    // 2. State variables are persistent between function calls
     mapping(address => uint256) private s_addressToAmountFunded;
     address[] private s_funders;
 
@@ -40,6 +43,19 @@ contract FundMe {
         if (msg.sender != i_owner) revert FundMe__NotOwner();
         _;
     }
+
+    function cheaperWithdraw() public onlyOwner {
+        uint256 fundersLength = s_funders.length;
+        for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
+            address s_funder = s_funders[funderIndex];
+            s_addressToAmountFunded[s_funder] = 0;
+        }
+        s_funders = new address[](0);
+        // call
+        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed");
+    }
+
 
     function withdraw() public onlyOwner {
         for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {

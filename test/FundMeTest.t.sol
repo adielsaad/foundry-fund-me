@@ -11,6 +11,7 @@ contract FundMeTest is Test {
     address USER = makeAddr("user"); // make a new address
     uint256 constant SEND_VALUE = 0.1 ether; // constant value to send
     uint256 constant STARTING_BALANCE = 10 ether; // constant starting balance
+    uint256 constant GAS_PRICE = 1;
 
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
@@ -67,6 +68,15 @@ contract FundMeTest is Test {
 
     /* 
         test the withdraw function with a single funder
+        Arrange:
+            - get the starting contract balance
+            - get the starting owner balance
+        Act:
+            - prank the owner
+            - call the withdraw function
+        Assert:
+            - check if the contract balance is 0
+            - check if the owner balance is the starting balance plus the contract balance
     */
     function testWithdrawWithASingleFunder() public funded {
         // Arrange
@@ -74,8 +84,14 @@ contract FundMeTest is Test {
         uint256 startingOwnerBalance = address(fundMe.getOwner()).balance;
 
         // Act
-        vm.prank(fundMe.getOwner());
+        // gas usage can be calculated by getting the gas left before and after the function call
+        // uint256 gasStart = gasleft();
+        // vm.txGasPrice(GAS_PRICE); // why is this needed? because the default gas price is 0 in anvil test environment
+        vm.prank(fundMe.getOwner()); 
         fundMe.withdraw();
+        // uint256 gasEnd = gasleft();
+        // uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice;
+        // console.log(gasUsed);
 
         // Assert
         uint256 endingContractBalance = address(fundMe).balance;
@@ -83,6 +99,7 @@ contract FundMeTest is Test {
         assertEq(endingContractBalance, 0);
         assertEq(endingOwnerBalance, startingOwnerBalance + startingContractBalance); // check if the owner balance is the starting balance plus the contract balance
     }
+
 
     function testWithdrawFromMultipleFunders() public funded {
         // Arrange  
@@ -103,9 +120,30 @@ contract FundMeTest is Test {
         fundMe.withdraw();
         vm.stopPrank(); // stop the prank to avoid pranked address to be the owner
         // Assert
-        uint256 endingContractBalance = address(fundMe).balance;
-        uint256 endingOwnerBalance = address(fundMe.getOwner()).balance;
-        assertEq(endingContractBalance, 0);
-        assertEq(endingOwnerBalance, startingOwnerBalance + startingContractBalance);
+        assertEq(address(fundMe).balance, 0);
+        assertEq(address(fundMe.getOwner()).balance, startingOwnerBalance + startingContractBalance);
+    }
+
+    function testWithdrawFromMultipleFundersCheaper() public funded {
+        // Arrange  
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1; 
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
+            // vm.prank new address
+            // vm.deal new address with 1 ether
+            hoax(address(i), SEND_VALUE); // hoax is a function that creates a new address and funds it with 1 ether
+            // fund the fundMe contract
+            fundMe.fund{value: SEND_VALUE}();
+        }
+        // Act
+        uint256 startingContractBalance = address(fundMe).balance;
+        uint256 startingOwnerBalance = address(fundMe.getOwner()).balance;
+        // vm.prank fundMe owner
+        vm.prank(fundMe.getOwner());
+        fundMe.cheaperWithdraw();
+        vm.stopPrank(); // stop the prank to avoid pranked address to be the owner
+        // Assert
+        assertEq(address(fundMe).balance, 0);
+        assertEq(address(fundMe.getOwner()).balance, startingOwnerBalance + startingContractBalance);
     }
 }
