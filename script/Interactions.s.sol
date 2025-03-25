@@ -6,14 +6,20 @@ import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {FundMe} from "../src/FundMe.sol";
 import {console} from "forge-std/console.sol";
 
-/* 
-    This script is used to fund the FundMe contract
-    It is used to test the FundMe contract
-*/
+/**
+ * @title FundFundMe
+ * @notice Script to fund the FundMe contract
+ * @dev Used for testing and interacting with the FundMe contract
+ */
 contract FundFundMe is Script {
 
     uint256 SEND_VALUE = 0.1 ether;
 
+    /**
+     * @notice Funds the FundMe contract with ETH
+     * @param mostRecentlyDeployed The address of the most recently deployed FundMe contract
+     * @dev Uses the FundMe contract's fund function
+     */
     function fundFundMe(address mostRecentlyDeployed) public {
         vm.startBroadcast();
         FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();
@@ -21,6 +27,10 @@ contract FundFundMe is Script {
         console.log("Funded FundMe with %s", SEND_VALUE);
     }
 
+    /**
+     * @notice Main function to run the funding script
+     * @dev Gets the most recently deployed contract and funds it
+     */
     function run() external {
         address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
             "FundMe",
@@ -32,20 +42,30 @@ contract FundFundMe is Script {
     }
 }
 
-/* 
-    This script is used to withdraw the funds from the FundMe contract
-    It is used to test the FundMe contract
-*/
+/**
+ * @title WithdrawFundMe
+ * @notice Script to withdraw funds from the FundMe contract
+ * @dev Used for testing and interacting with the FundMe contract
+ */
 contract WithdrawFundMe is Script {
 
     uint256 constant SEND_VALUE = 0.1 ether;
 
+    /**
+     * @notice Withdraws all funds from the FundMe contract
+     * @param mostRecentlyDeployed The address of the most recently deployed FundMe contract
+     * @dev Uses the FundMe contract's withdraw function
+     */
     function withdrawFundMe(address mostRecentlyDeployed) public {
         vm.startBroadcast();    
         FundMe(payable(mostRecentlyDeployed)).withdraw();
         vm.stopBroadcast();
     }
 
+    /**
+     * @notice Main function to run the withdrawal script
+     * @dev Gets the most recently deployed contract and withdraws from it
+     */
     function run() external {
         address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
             "FundMe",
