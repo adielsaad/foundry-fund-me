@@ -22,7 +22,7 @@ contract FundMeTest is Test {
     }
 
     function testOwnerIsMsgSender() public {
-        assertEq(fundMe.i_owner(), msg.sender);
+        assertEq(fundMe.getOwner(), msg.sender);
     }
 
     function testPriceFeedVersionIsAccurate() public {
@@ -42,9 +42,70 @@ contract FundMeTest is Test {
         assertEq(amountFunded, SEND_VALUE);
     }
 
-    function testOnlyOwnerCanWithdraw() public {
-        vm.expectRevert(); // expect the withdraw function to revert
-        fundMe.withdraw(); // call the withdraw function
+    function testAddsFunderToArrayOfFunders() public {
+        // Arrange  
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        // Act
+        address funder = fundMe.getFunders(0);
+        // Assert
+        assertEq(funder, USER);
     }
-    
+
+    // modifier to fund the user
+    modifier funded() {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        _; // continue with the next function
+    }
+    function testOnlyOwnerCanWithdraw() public funded {
+        vm.prank(USER);
+        // expect the withdraw function to revert
+        vm.expectRevert(); 
+        fundMe.withdraw(); 
+    }
+
+    /* 
+        test the withdraw function with a single funder
+    */
+    function testWithdrawWithASingleFunder() public funded {
+        // Arrange
+        uint256 startingContractBalance = address(fundMe).balance;
+        uint256 startingOwnerBalance = address(fundMe.getOwner()).balance;
+
+        // Act
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw();
+
+        // Assert
+        uint256 endingContractBalance = address(fundMe).balance;
+        uint256 endingOwnerBalance = address(fundMe.getOwner()).balance;
+        assertEq(endingContractBalance, 0);
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingContractBalance); // check if the owner balance is the starting balance plus the contract balance
+    }
+
+    function testWithdrawFromMultipleFunders() public funded {
+        // Arrange  
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1; 
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
+            // vm.prank new address
+            // vm.deal new address with 1 ether
+            hoax(address(i), SEND_VALUE); // hoax is a function that creates a new address and funds it with 1 ether
+            // fund the fundMe contract
+            fundMe.fund{value: SEND_VALUE}();
+        }
+        // Act
+        uint256 startingContractBalance = address(fundMe).balance;
+        uint256 startingOwnerBalance = address(fundMe.getOwner()).balance;
+        // vm.prank fundMe owner
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw();
+        vm.stopPrank(); // stop the prank to avoid pranked address to be the owner
+        // Assert
+        uint256 endingContractBalance = address(fundMe).balance;
+        uint256 endingOwnerBalance = address(fundMe.getOwner()).balance;
+        assertEq(endingContractBalance, 0);
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingContractBalance);
+    }
 }
