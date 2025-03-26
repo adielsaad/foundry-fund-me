@@ -13,7 +13,7 @@ import {console} from "forge-std/console.sol";
  */
 contract FundFundMe is Script {
 
-    uint256 SEND_VALUE = 0.1 ether;
+    uint256 SEND_VALUE = 0.05 ether;
 
     /**
      * @notice Funds the FundMe contract with ETH
@@ -21,9 +21,9 @@ contract FundFundMe is Script {
      * @dev Uses the FundMe contract's fund function
      */
     function fundFundMe(address mostRecentlyDeployed) public {
-        vm.startBroadcast();
+        vm.startBroadcast(); // comment this to fund the contract
         FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();
-        vm.stopBroadcast();
+        vm.stopBroadcast(); // comment this to fund the contract
         console.log("Funded FundMe with %s", SEND_VALUE);
     }
 
@@ -49,7 +49,7 @@ contract FundFundMe is Script {
  */
 contract WithdrawFundMe is Script {
 
-    uint256 constant SEND_VALUE = 0.1 ether;
+    uint256 constant SEND_VALUE = 0.05 ether;
 
     /**
      * @notice Withdraws all funds from the FundMe contract
@@ -57,9 +57,7 @@ contract WithdrawFundMe is Script {
      * @dev Uses the FundMe contract's withdraw function
      */
     function withdrawFundMe(address mostRecentlyDeployed) public {
-        vm.startBroadcast();    
         FundMe(payable(mostRecentlyDeployed)).withdraw();
-        vm.stopBroadcast();
     }
 
     /**
@@ -71,7 +69,9 @@ contract WithdrawFundMe is Script {
             "FundMe",
             block.chainid
         );
+        vm.startBroadcast();
         withdrawFundMe(mostRecentlyDeployed);
+        vm.stopBroadcast();
     }
 }
 
