@@ -1,32 +1,77 @@
 # FundMe Smart Contract
 
-A decentralized crowdfunding platform built with Solidity and Foundry. This project allows users to fund the contract with ETH, which can only be withdrawn by the contract owner.
+A decentralized funding platform built with Solidity and Foundry. This project allows users to fund a contract with ETH and withdraw funds (restricted to the contract owner).
 
 ## Features
 
-- Accept ETH donations with a minimum USD value requirement
-- Real-time ETH/USD price conversion using Chainlink Price Feeds
-- Secure withdrawal mechanism (owner-only)
-- Gas-optimized withdrawal function
-- Automated testing suite with comprehensive test coverage
-- Multi-network deployment support
+- Fund the contract with ETH (minimum 0.01 ETH)
+- Withdraw funds (owner only)
+- Price feed integration using Chainlink
+- Contract verification on Etherscan
+- Comprehensive test coverage
+- Deployment scripts for Sepolia testnet
 
 ## Prerequisites
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [Make](https://www.gnu.org/software/make/)
+- Sepolia ETH (for deployment and testing)
+- Etherscan API Key (for contract verification)
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/adielsaad/foundry-fund-me.git
+git clone https://github.com/yourusername/foundry-fund-me.git
 cd foundry-fund-me
 ```
 
 2. Install dependencies:
 ```bash
 forge install
+```
+
+3. Create a `.env` file with the following variables:
+```env
+SEPOLIA_RPC_URL=your_sepolia_rpc_url
+ETHERSCAN_API_KEY=your_etherscan_api_key
+KEYSTORE_ACCOUNT=your_keystore_account
+```
+
+## Usage
+
+### Build the Project
+```bash
+make build
+```
+
+### Deploy to Sepolia
+```bash
+make deploy-sepolia
+```
+
+### Fund the Contract
+```bash
+make fund-sepolia
+```
+
+## Project Structure
+
+```
+foundry-fund-me/
+├── src/                    # Source contracts
+│   └── FundMe.sol         # Main contract
+├── test/                   # Test files
+│   └── unit/              # Unit tests
+├── script/                 # Deployment and interaction scripts
+│   ├── DeployFundMe.s.sol # Deployment script
+│   └── Interactions.s.sol # Interaction scripts
+├── lib/                    # Dependencies
+├── out/                    # Compiled artifacts
+├── .env                    # Environment variables
+├── foundry.toml           # Foundry configuration
+└── Makefile               # Build and deployment commands
 ```
 
 ## Testing
@@ -36,75 +81,10 @@ Run the test suite:
 forge test
 ```
 
-For verbose output:
-```bash
-forge test -vv
-```
+## Contract Details
 
-The test suite includes:
-- Basic functionality tests
-- Gas optimization tests
-- Multiple funder scenarios
-- Owner-only access tests
-- Price feed integration tests
-
-## Deployment
-
-The project supports deployment to multiple networks through the `HelperConfig` contract. To deploy:
-
-1. Set up your environment variables (create a `.env` file):
-```env
-PRIVATE_KEY=your_private_key
-ETHERSCAN_API_KEY=your_etherscan_api_key
-```
-
-2. Deploy to a specific network:
-```bash
-forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url <your_rpc_url> --broadcast
-```
-
-## Contract Functions
-
-### `fund()`
-- Allows users to send ETH to the contract
-- Requires a minimum USD value (5 USD)
-- Tracks funders and their contribution amounts
-
-### `withdraw()`
-- Owner-only function to withdraw all funds
-- Resets the funders array and contribution amounts
-- Transfers all ETH to the owner
-
-### `cheaperWithdraw()`
-- Gas-optimized version of the withdraw function
-- More efficient for handling multiple funders
-- Same functionality as `withdraw()` but with lower gas costs
-
-### `getVersion()`
-- Returns the version of the Chainlink Price Feed being used
-
-## Security Features
-
-- Owner-only withdrawal function
-- Minimum USD value requirement for funding
-- Immutable owner address
-- Chainlink Price Feed integration for accurate ETH/USD conversion
-- Gas optimization for better scalability
-
-## Gas Optimization
-
-The contract includes gas optimization features:
-- Efficient withdrawal mechanism for multiple funders
-- Optimized storage access patterns
-- Reduced gas costs for bulk operations
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Foundry](https://book.getfoundry.sh/)
-- [Chainlink](https://chain.link/)
-- [OpenZeppelin](https://openzeppelin.com/)
-
+### FundMe Contract
+- Minimum funding amount: 0.01 ETH
+- Funding amount in Interactions script: 0.05 ETH
+- Uses Chainlink price feed for ETH/USD conversion
+- Owner can withdraw all funds
